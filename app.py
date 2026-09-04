@@ -1,10 +1,3 @@
-This blocking happens because hosted HTTPS domains like Streamlit Cloud enforce strict Content Security Policies (CSP) and cross-origin security rules that block `data:application/pdf;base64` URIs embedded inside `<iframe>` tags across modern browsers.
-
-To bypass browser security blocks, use PyMuPDF (`fitz`) to render the generated PDF page directly into a high-resolution PNG image for the Streamlit preview using `st.image()`.
-
-Replace your preview section at the bottom of `app.py` with this updated, cloud-safe code:
-
-```python
 import io
 import fitz  # PyMuPDF
 import pandas as pd
@@ -250,5 +243,3 @@ if "pdf_bytes" in st.session_state:
         file_name="Completed_General_35A_Voucher.pdf",
         mime="application/pdf",
     )
-
-```
