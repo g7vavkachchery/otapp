@@ -1,4 +1,5 @@
 import io
+import base64
 import fitz  # PyMuPDF
 import pandas as pd
 import streamlit as st
@@ -202,8 +203,8 @@ if st.button("Generate Filled General 35 A Voucher"):
 
             current_y += row_height
 
-        # Task Description in a Bounded Box
-        task_rect = fitz.Rect(221, 412, 550, max(current_y, 440))
+        # Task Description in a Bounded Box (Auto-wraps across lines like Word)
+        task_rect = fitz.Rect(221, (412 + (current_y - 412)/2), 369, max(current_y, 440))
         page.insert_textbox(task_rect, task_description, fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
 
         # 3. Totals Row
@@ -211,10 +212,10 @@ if st.button("Generate Filled General 35 A Voucher"):
             fitz.Point(170, 724), f"{total_hours:.2f} hrs", fontsize=10
         )
         
-        # Total Amount in Numbers & Words inside Bounded Box
+        # Total Amount in Numbers & Words inside Bounded Box (Auto-wraps)
         amount_words = number_to_words(total_amount)
         full_amount_str = f"Rs. {total_amount:,.2f} ({amount_words})"
-        amount_rect = fitz.Rect(235, 745, 550, 780)
+        amount_rect = fitz.Rect(230, 740, 550, 780)
         page.insert_textbox(amount_rect, full_amount_str, fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
 
         # Save Buffer to Session State
@@ -224,18 +225,14 @@ if st.button("Generate Filled General 35 A Voucher"):
 
         st.session_state["pdf_bytes"] = output_buffer.getvalue()
 
-# Image-based Document Preview (Bypasses browser iframe PDF blocks completely)
+# Preview & Download Workflow
 if "pdf_bytes" in st.session_state:
     st.success("Voucher generated successfully!")
 
     st.subheader("Document Preview")
-    preview_doc = fitz.open(stream=st.session_state["pdf_bytes"], filetype="pdf")
-    preview_page = preview_doc[0]
-    pix = preview_page.get_pixmap(dpi=150)  # Render page to 150 DPI image
-    img_bytes = pix.tobytes("png")
-    preview_doc.close()
-
-    st.image(img_bytes, caption="Generated Voucher Preview", use_container_width=True)
+    base64_pdf = base64.b64encode(st.session_state["pdf_bytes"]).decode('utf-8')
+    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf"></iframe>'
+    st.markdown(pdf_display, unsafe_allow_html=True)
 
     st.download_button(
         label="Download Completed Voucher PDF",
