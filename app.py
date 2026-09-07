@@ -2,13 +2,14 @@ import io
 import fitz  # PyMuPDF
 import pandas as pd
 import streamlit as st
+import datetime
 
 # ----------------- PAGE CONFIGURATION -----------------
 st.set_page_config(
     page_title="General 35 A | OT Generator", 
     page_icon="📄", 
     layout="wide",
-    initial_sidebar_state="collapsed" # Hide sidebar to prioritize main content
+    initial_sidebar_state="collapsed"
 )
 
 # Custom CSS for better button styling and cleaner layout
@@ -93,26 +94,39 @@ if uploaded_excel is not None:
 
 st.write("") # Spacer
 
-# UI: Step 2 - Employee Details (Responsive Columns)
-st.markdown("#### 👤 Step 2: Employee & Payment Details")
+# UI: Step 2 - Employee Details & Form Details
+st.markdown("#### 👤 Step 2: Employee & Form Details")
 with st.expander("View / Edit Details", expanded=True):
     col1, col2, col3 = st.columns(3)
-    
     with col1:
         name = st.text_input("Name", value=auto_name)
         pay_unit = st.text_input("Pay Unit / Station")
-        
     with col2:
         designation = st.text_input("Designation", value=auto_pos)
         salary_per_month = st.number_input("Salary Per Month (LKR)", value=45000.0, step=1000.0)
-        
     with col3:
         place_of_work = st.text_input("Place of Work", value=auto_dept)
         ot_divisor = st.number_input("OT Rate Divisor", value=244.0)
 
     ot_rate_per_hour = (salary_per_month / ot_divisor) if ot_divisor > 0 else 0.0
-    
     st.success(f"**Calculated OT Rate:** LKR {ot_rate_per_hour:.2f} per hour")
+
+    # New Section: Form Specific Fields
+    st.markdown("##### 📅 Overtime Request Details")
+    date_col1, date_col2, hours_col = st.columns(3)
+    
+    # Calculate default first and last day of the current month
+    today = datetime.date.today()
+    first_day = today.replace(day=1)
+    next_month = first_day.replace(day=28) + datetime.timedelta(days=4)
+    last_day = next_month - datetime.timedelta(days=next_month.day)
+
+    with date_col1:
+        req_start_date = st.date_input("OT Month First Date", value=first_day)
+    with date_col2:
+        req_end_date = st.date_input("OT Month Last Date", value=last_day)
+    with hours_col:
+        approved_hours = st.number_input("No. of Hours Approved", value=0.0, step=1.0)
     
     task_description = st.text_area(
         "Task Description (Applies to all rows if no 'Task' column exists)",
@@ -152,7 +166,6 @@ if not df.empty:
 
     st.markdown("#### 📊 Step 3: Calculation Summary")
     
-    # Responsive metric cards
     m1, m2, m3 = st.columns(3)
     m1.metric("Valid OT Entries", f"{len(df)} Days")
     m2.metric("Total OT Hours", f"{total_hours:.2f} hrs")
@@ -160,13 +173,12 @@ if not df.empty:
 
     st.dataframe(df, use_container_width=True, hide_index=True)
 
-    # Generate Button
     if st.button("🚀 Generate Filled General 35 A Voucher"):
         try:
             doc = fitz.open("gen-35a.pdf")
             page = doc[0]
 
-            # 1. Header Information
+            # 1. Standard Header Information
             page.insert_text(fitz.Point(165, 85), name, fontsize=10)
             page.insert_text(fitz.Point(432, 93), designation, fontsize=10)
             page.insert_text(fitz.Point(157, 120), place_of_work, fontsize=10)
@@ -174,7 +186,17 @@ if not df.empty:
             page.insert_text(fitz.Point(157, 148), f"Rs. {salary_per_month:,.2f}", fontsize=10)
             page.insert_text(fitz.Point(445, 147), f"Rs. {ot_rate_per_hour:.2f} / hr", fontsize=10)
 
-            # 2. Table Rows
+            # 2. NEWLY ADDED: Additional Form Items
+            # Formats date as DD/MM/YYYY (e.g. 01/08/2026)
+            page.insert_text(fitz.Point(44, 289), req_start_date.strftime("%d/%m/%Y"), fontsize=9)
+            page.insert_text(fitz.Point(75, 289), req_end_date.strftime("%d/%m/%Y"), fontsize=9)
+            page.insert_text(fitz.Point(105, 290), f"{approved_hours}", fontsize=9)
+            
+            # Secondary Task Textbox
+            task_rect_secondary = fitz.Rect(175, 278, 367, 305)
+            page.insert_textbox(task_rect_secondary, task_description, fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
+
+            # 3. Table Rows
             current_y = 427
             row_height = 16.35
             for idx, row in df.iterrows():
@@ -189,9 +211,9 @@ if not df.empty:
                 page.insert_text(fitz.Point(175, current_y), hrs, fontsize=9)
                 current_y += row_height
 
-            # Task & Totals
-            task_rect = fitz.Rect(221, (412 + (current_y - 412)/2), 369, max(current_y, 440))
-            page.insert_textbox(task_rect, task_description, fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
+            # 4. Primary Task & Totals
+            task_rect_primary = fitz.Rect(221, (412 + (current_y - 412)/2), 369, max(current_y, 440))
+            page.insert_textbox(task_rect_primary, task_description, fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
             page.insert_text(fitz.Point(170, 724), f"{total_hours:.2f} hrs", fontsize=10)
             
             amount_words = number_to_words(total_amount)
@@ -210,7 +232,6 @@ if not df.empty:
 elif uploaded_excel is not None:
     st.warning("⚠️ The uploaded timesheet contains no valid overtime records (No 'Hours' > 0 found).")
 
-
 # ----------------- PREVIEW & DOWNLOAD -----------------
 if "pdf_bytes" in st.session_state:
     st.divider()
@@ -225,17 +246,16 @@ if "pdf_bytes" in st.session_state:
             mime="application/pdf"
         )
     
-    st.write("") # Spacer
+    st.write("")
 
-    # RESPONSIVE PREVIEW: Renders PDF to image for perfect cross-platform support
+    # RESPONSIVE PREVIEW
     st.subheader("Document Preview")
     preview_doc = fitz.open(stream=st.session_state["pdf_bytes"], filetype="pdf")
     preview_page = preview_doc[0]
-    pix = preview_page.get_pixmap(dpi=150) # Renders as crisp image
+    pix = preview_page.get_pixmap(dpi=150)
     img_bytes = pix.tobytes("png")
     preview_doc.close()
 
-    # Create a nice shadowed border effect for the document preview
     st.markdown(
         """
         <style>
