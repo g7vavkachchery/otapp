@@ -175,16 +175,16 @@ if not df.empty:
 
     if st.button("🚀 Generate Filled General 35 A Voucher"):
         try:
-            doc = fitz.open("gen-35a-cpy.pdf")
+            doc = fitz.open("gen-35a.pdf")
             page = doc[0]
 
             # 1. Standard Header Information
-            page.insert_text(fitz.Point(185, 105), name, fontsize=10)
-            page.insert_text(fitz.Point(452, 133), designation, fontsize=10)
-            page.insert_text(fitz.Point(177, 140), place_of_work, fontsize=10)
-            page.insert_text(fitz.Point(430, 138), pay_unit, fontsize=10)
-            page.insert_text(fitz.Point(177, 168), f"Rs. {salary_per_month:,.2f}", fontsize=10)
-            page.insert_text(fitz.Point(465, 167), f"Rs. {ot_rate_per_hour:.2f} / hr", fontsize=10)
+            page.insert_text(fitz.Point(165, 85), name, fontsize=10)
+            page.insert_text(fitz.Point(432, 93), designation, fontsize=10)
+            page.insert_text(fitz.Point(157, 120), place_of_work, fontsize=10)
+            page.insert_text(fitz.Point(410, 118), pay_unit, fontsize=10)
+            page.insert_text(fitz.Point(157, 148), f"Rs. {salary_per_month:,.2f}", fontsize=10)
+            page.insert_text(fitz.Point(445, 147), f"Rs. {ot_rate_per_hour:.2f} / hr", fontsize=10)
 
             # 2. NEWLY ADDED: Additional Form Items
             # Formats date as DD/MM/YYYY (e.g. 01/08/2026)
