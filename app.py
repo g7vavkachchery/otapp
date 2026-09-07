@@ -64,18 +64,13 @@ def format_time_no_seconds(time_val):
     return s
 
 # File Uploaders
-col1, col2 = st.columns(2)
-with col1:
-    uploaded_pdf = st.file_uploader(
-        "Upload Blank General 35 A PDF", type=["pdf"]
-    )
-with col2:
-    uploaded_excel = st.file_uploader(
-        "Upload Excel Timesheet / Attendance Log", type=["xlsx", "xls", "csv"]
-    )
-    st.caption(
-        "Supports standard timesheets (`Start_Time`, `Out_Time`) or Attendance Reports (`First-In`, `Last-Out`, `OT`)."
-    )
+st.info("Template 'gen-35a.pdf' is automatically loaded from the project directory.")
+uploaded_excel = st.file_uploader(
+    "Upload Excel Timesheet / Attendance Log", type=["xlsx", "xls", "csv"]
+)
+st.caption(
+    "Supports standard timesheets (`Start_Time`, `Out_Time`) or Attendance Reports (`First-In`, `Last-Out`, `OT`)."
+)
 
 # Pre-process uploaded file & auto-extract metadata if present
 df_raw = pd.DataFrame()
@@ -164,66 +159,70 @@ if not df_raw.empty:
 
 # PDF Generation
 if st.button("Generate Filled General 35 A Voucher"):
-    if uploaded_pdf is None or uploaded_excel is None:
-        st.error("Please upload both the PDF template and the Excel timesheet.")
+    if uploaded_excel is None:
+        st.error("Please upload the Excel timesheet.")
     elif df.empty:
         st.error("The uploaded timesheet contains no valid overtime records.")
     else:
-        pdf_bytes = uploaded_pdf.read()
-        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-        page = doc[0]
+        try:
+            # Load PDF directly from the local directory
+            doc = fitz.open("gen-35a.pdf")
+            page = doc[0]
 
-        # 1. Header Information (Custom Calibrated Coordinates)
-        page.insert_text(fitz.Point(165, 85), name, fontsize=10)
-        page.insert_text(fitz.Point(432, 93), designation, fontsize=10)
-        page.insert_text(fitz.Point(157, 120), place_of_work, fontsize=10)
+            # 1. Header Information (Custom Calibrated Coordinates)
+            page.insert_text(fitz.Point(165, 85), name, fontsize=10)
+            page.insert_text(fitz.Point(432, 93), designation, fontsize=10)
+            page.insert_text(fitz.Point(157, 120), place_of_work, fontsize=10)
 
-        page.insert_text(fitz.Point(410, 118), pay_unit, fontsize=10)
-        page.insert_text(
-            fitz.Point(157, 148), f"Rs. {salary_per_month:,.2f}", fontsize=10
-        )
-        page.insert_text(
-            fitz.Point(445, 147), f"Rs. {ot_rate_per_hour:.2f} / hr", fontsize=10
-        )
+            page.insert_text(fitz.Point(410, 118), pay_unit, fontsize=10)
+            page.insert_text(
+                fitz.Point(157, 148), f"Rs. {salary_per_month:,.2f}", fontsize=10
+            )
+            page.insert_text(
+                fitz.Point(445, 147), f"Rs. {ot_rate_per_hour:.2f} / hr", fontsize=10
+            )
 
-        # 2. Table Rows (Times without seconds)
-        current_y = 427
-        row_height = 16.35
+            # 2. Table Rows (Times without seconds)
+            current_y = 427
+            row_height = 16.35
 
-        for idx, row in df.iterrows():
-            date_str = str(row.get("Date", ""))[:10]
-            in_time = format_time_no_seconds(row.get("Start_Time", row.get("First-In", "")))
-            out_time = format_time_no_seconds(row.get("Out_Time", row.get("Last-Out", "")))
-            hrs = f"{row.get('Hours', 0):.2f}"
+            for idx, row in df.iterrows():
+                date_str = str(row.get("Date", ""))[:10]
+                in_time = format_time_no_seconds(row.get("Start_Time", row.get("First-In", "")))
+                out_time = format_time_no_seconds(row.get("Out_Time", row.get("Last-Out", "")))
+                hrs = f"{row.get('Hours', 0):.2f}"
 
-            page.insert_text(fitz.Point(45, current_y), date_str, fontsize=9)
-            page.insert_text(fitz.Point(98, current_y), in_time, fontsize=9)
-            page.insert_text(fitz.Point(134, current_y), out_time, fontsize=9)
-            page.insert_text(fitz.Point(175, current_y), hrs, fontsize=9)
+                page.insert_text(fitz.Point(45, current_y), date_str, fontsize=9)
+                page.insert_text(fitz.Point(98, current_y), in_time, fontsize=9)
+                page.insert_text(fitz.Point(134, current_y), out_time, fontsize=9)
+                page.insert_text(fitz.Point(175, current_y), hrs, fontsize=9)
 
-            current_y += row_height
+                current_y += row_height
 
-        # Task Description in a Bounded Box (Auto-wraps across lines like Word)
-        task_rect = fitz.Rect(221, (412 + (current_y - 412)/2), 369, max(current_y, 440))
-        page.insert_textbox(task_rect, task_description, fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
+            # Task Description in a Bounded Box (Auto-wraps across lines like Word)
+            task_rect = fitz.Rect(221, (412 + (current_y - 412)/2), 369, max(current_y, 440))
+            page.insert_textbox(task_rect, task_description, fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
 
-        # 3. Totals Row
-        page.insert_text(
-            fitz.Point(170, 724), f"{total_hours:.2f} hrs", fontsize=10
-        )
-        
-        # Total Amount in Numbers & Words inside Bounded Box (Auto-wraps)
-        amount_words = number_to_words(total_amount)
-        full_amount_str = f"Rs. {total_amount:,.2f} ({amount_words})"
-        amount_rect = fitz.Rect(230, 740, 550, 780)
-        page.insert_textbox(amount_rect, full_amount_str, fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
+            # 3. Totals Row
+            page.insert_text(
+                fitz.Point(170, 724), f"{total_hours:.2f} hrs", fontsize=10
+            )
+            
+            # Total Amount in Numbers & Words inside Bounded Box (Auto-wraps)
+            amount_words = number_to_words(total_amount)
+            full_amount_str = f"Rs. {total_amount:,.2f} ({amount_words})"
+            amount_rect = fitz.Rect(230, 740, 550, 780)
+            page.insert_textbox(amount_rect, full_amount_str, fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
 
-        # Save Buffer to Session State
-        output_buffer = io.BytesIO()
-        doc.save(output_buffer)
-        doc.close()
+            # Save Buffer to Session State
+            output_buffer = io.BytesIO()
+            doc.save(output_buffer)
+            doc.close()
 
-        st.session_state["pdf_bytes"] = output_buffer.getvalue()
+            st.session_state["pdf_bytes"] = output_buffer.getvalue()
+
+        except FileNotFoundError:
+            st.error("Error: The template file 'gen-35a.pdf' was not found in the project directory. Please ensure it is uploaded to the same folder as this script.")
 
 # Preview & Download Workflow
 if "pdf_bytes" in st.session_state:
