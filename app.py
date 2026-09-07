@@ -188,9 +188,9 @@ if not df.empty:
 
             # 2. NEWLY ADDED: Additional Form Items
             # Formats date as DD/MM/YYYY (e.g. 01/08/2026)
-            page.insert_text(fitz.Rect(46, 277, 71, 305), req_start_date.strftime("%d/%m/%Y"), fontsize=9)
-            page.insert_text(fitz.Rect(75, 277, 99, 305), req_end_date.strftime("%d/%m/%Y"), fontsize=9)
-            page.insert_text(fitz.Rect(102, 277, 167, 305), f"{approved_hours}", fontsize=9)
+            page.insert_text(fitz.Rect(46, 277, 71, 305), req_start_date.strftime("%d/%m/%Y"), fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
+            page.insert_text(fitz.Rect(75, 277, 99, 305), req_end_date.strftime("%d/%m/%Y"), fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
+            page.insert_text(fitz.Rect(102, 277, 167, 305), f"{approved_hours}", fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
             
             # Secondary Task Textbox
             task_rect_secondary = fitz.Rect(172, 277, 365, 305)
