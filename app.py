@@ -197,22 +197,22 @@ if not df.empty:
             page.insert_textbox(task_rect_secondary, task_description, fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
 
             # 3. Table Rows
-            current_y = 427
-            row_height = 16.35
+            current_y = 485
+            row_height = 16.04
             for idx, row in df.iterrows():
                 date_str = str(row.get("Date", ""))[:10]
                 in_time = format_time_no_seconds(row.get("Start_Time", row.get("First-In", "")))
                 out_time = format_time_no_seconds(row.get("Out_Time", row.get("Last-Out", "")))
                 hrs = f"{row.get('Hours', 0):.2f}"
 
-                page.insert_text(fitz.Point(45, current_y), date_str, fontsize=9)
-                page.insert_text(fitz.Point(98, current_y), in_time, fontsize=9)
-                page.insert_text(fitz.Point(134, current_y), out_time, fontsize=9)
-                page.insert_text(fitz.Point(175, current_y), hrs, fontsize=9)
+                page.insert_text(fitz.Point(58, current_y), date_str, fontsize=9)
+                page.insert_text(fitz.Point(103, current_y), in_time, fontsize=9)
+                page.insert_text(fitz.Point(129, current_y), out_time, fontsize=9)
+                page.insert_text(fitz.Point(169, current_y), hrs, fontsize=9)
                 current_y += row_height
 
             # 4. Primary Task & Totals
-            task_rect_primary = fitz.Rect(221, (412 + (current_y - 412)/2), 369, max(current_y, 440))
+            task_rect_primary = fitz.Rect(221, 470, 363, 869)
             page.insert_textbox(task_rect_primary, task_description, fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
             page.insert_text(fitz.Point(170, 724), f"{total_hours:.2f} hrs", fontsize=10)
             
