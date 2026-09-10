@@ -180,11 +180,11 @@ if not df.empty:
 
             # 1. Standard Header Information
             page.insert_text(fitz.Point(185, 100), name, fontsize=10)
-            page.insert_text(fitz.Point(432, 93), designation, fontsize=10)
+            page.insert_text(fitz.Point(475, 119), designation, fontsize=10)
             page.insert_text(fitz.Point(185, 135), place_of_work, fontsize=10)
-            page.insert_text(fitz.Point(410, 118), pay_unit, fontsize=10)
-            page.insert_text(fitz.Point(185, 163), f"Rs. {salary_per_month:,.2f}", fontsize=10)
-            page.insert_text(fitz.Point(445, 147), f"Rs. {ot_rate_per_hour:.2f} / hr", fontsize=10)
+            page.insert_text(fitz.Point(448, 155), pay_unit, fontsize=10)
+            page.insert_text(fitz.Point(185, 175), f"Rs. {salary_per_month:,.2f}", fontsize=10)
+            page.insert_text(fitz.Point(447, 186), f"Rs. {ot_rate_per_hour:.2f} / hr", fontsize=10)
 
             # 2. NEWLY ADDED: Additional Form Items
             # Formats date as DD/MM/YYYY (e.g. 01/08/2026)
