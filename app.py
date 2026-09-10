@@ -217,7 +217,7 @@ if not df.empty:
             page.insert_text(fitz.Point(160, 886), f"{total_hours:.2f} hrs", fontsize=10)
             
             amount_words = number_to_words(total_amount)
-            amount_rect = fitz.Rect(255, 895, 550, 915)
+            amount_rect = fitz.Rect(255, 890, 555, 915)
             page.insert_textbox(amount_rect, f"Rs. {total_amount:,.2f} ({amount_words})", fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
 
             output_buffer = io.BytesIO()
