@@ -189,11 +189,11 @@ if not df.empty:
             # 2. NEWLY ADDED: Additional Form Items
             # Formats date as DD/MM/YYYY (e.g. 01/08/2026)
             page.insert_textbox(fitz.Rect(55, 333, 83, 358), req_start_date.strftime("%d/%m/%Y"), fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
-            page.insert_textbox(fitz.Rect(88, 333, 113, 308), req_end_date.strftime("%d/%m/%Y"), fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
-            page.insert_textbox(fitz.Rect(195, 333, 373, 357), f"{approved_hours}", fontsize=9, align=fitz.TEXT_ALIGN_CENTER)
+            page.insert_textbox(fitz.Rect(88, 333, 113, 358), req_end_date.strftime("%d/%m/%Y"), fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
+            page.insert_textbox(fitz.Rect(116, 333, 191, 358), f"{approved_hours}", fontsize=9, align=fitz.TEXT_ALIGN_CENTER)
             
             # Secondary Task Textbox
-            task_rect_secondary = fitz.Rect(172, 280, 365, 308)
+            task_rect_secondary = fitz.Rect(194, 333, 372, 358)
             page.insert_textbox(task_rect_secondary, task_description, fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
 
             # 3. Table Rows
