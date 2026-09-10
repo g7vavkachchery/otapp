@@ -193,8 +193,8 @@ if not df.empty:
             page.insert_textbox(fitz.Rect(116, 333, 191, 358), f"{approved_hours}", fontsize=9, align=fitz.TEXT_ALIGN_CENTER)
             
             # Secondary Task Textbox
-            task_rect_secondary = fitz.Rect(194, 333, 372, 358)
-            page.insert_textbox(task_rect_secondary, task_description, fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
+            task_rect_secondary = fitz.Rect(192, 330, 374, 360)
+            page.insert_textbox(task_rect_secondary, task_description, fontsize=9, align=fitz.TEXT_ALIGN_JUSTIFY)
 
             # 3. Table Rows
             current_y = 485
