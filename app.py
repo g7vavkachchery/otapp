@@ -175,7 +175,7 @@ if not df.empty:
 
     if st.button("🚀 Generate Filled General 35 A Voucher"):
         try:
-            doc = fitz.open("gen-35a.pdf")
+            doc = fitz.open("gen-35a-cpy.pdf")
             page = doc[0]
 
             # 1. Standard Header Information
