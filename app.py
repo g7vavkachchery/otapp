@@ -213,7 +213,7 @@ if not df.empty:
 
             # 4. Primary Task & Totals
             task_rect_primary = fitz.Rect(221, 470, 363, 869)
-            page.insert_textbox(task_rect_primary, task_description, fontsize=9, align=fitz.TEXT_ALIGN_MIDDLE)
+            page.insert_textbox(task_rect_primary, task_description, fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
             page.insert_text(fitz.Point(170, 724), f"{total_hours:.2f} hrs", fontsize=10)
             
             amount_words = number_to_words(total_amount)
