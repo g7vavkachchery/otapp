@@ -205,19 +205,19 @@ if not df.empty:
                 out_time = format_time_no_seconds(row.get("Out_Time", row.get("Last-Out", "")))
                 hrs = f"{row.get('Hours', 0):.2f}"
 
-                page.insert_text(fitz.Point(58, current_y), date_str, fontsize=9)
+                page.insert_text(fitz.Point(55, current_y), date_str, fontsize=9)
                 page.insert_text(fitz.Point(103, current_y), in_time, fontsize=9)
                 page.insert_text(fitz.Point(129, current_y), out_time, fontsize=9)
                 page.insert_text(fitz.Point(169, current_y), hrs, fontsize=9)
                 current_y += row_height
 
             # 4. Primary Task & Totals
-            task_rect_primary = fitz.Rect(221, 470, 363, 869)
+            task_rect_primary = fitz.Rect(221, (470 + (current_y - 470) / 2), 363, 869)
             page.insert_textbox(task_rect_primary, task_description, fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
-            page.insert_text(fitz.Point(170, 724), f"{total_hours:.2f} hrs", fontsize=10)
+            page.insert_text(fitz.Point(160, 886), f"{total_hours:.2f} hrs", fontsize=10)
             
             amount_words = number_to_words(total_amount)
-            amount_rect = fitz.Rect(230, 740, 550, 780)
+            amount_rect = fitz.Rect(255, 895, 550, 915)
             page.insert_textbox(amount_rect, f"Rs. {total_amount:,.2f} ({amount_words})", fontsize=9, align=fitz.TEXT_ALIGN_LEFT)
 
             output_buffer = io.BytesIO()
